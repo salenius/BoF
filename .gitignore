@@ -1,6 +1,7 @@
 #Ignooraa kaikki bof-loppuiset tiedostot
 *.bof
 *.txt
+.gitignore
 
 #Ignooraa dashboards
 /dashboards
