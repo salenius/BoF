@@ -7,6 +7,7 @@
 ###################
 
 # I use this file to calculate the standard deviation for several time series
+# Basically take square root of variance
 
 std <- function(vec){
   output = sqrt(var(vec,na.rm=TRUE))
