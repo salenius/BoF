@@ -50,3 +50,30 @@ print(std(eur1[,2]))
 dpv10 <- xlsxload("valtion10v.xlsx")
 print(std(dpv10[,2]))
 # 0.6251164
+
+intspr <- xlsx::read.xlsx("saksanordic10ybondyield.xlsx",sheetName="Taul1")
+
+bond10y <- merge(dpv10,intspr,by.x=1,by.y=1)
+colnames(bond10y) = c("date","FI","DE","SE","DK","NO","IS")
+
+################################################
+# lasketaan kuukausittaiset keskiarvot ja standardipoikkeamat
+
+spread <- as.matrix(bond10y[,3:7])
+
+# Laske spreadit suht. Suomen korkoon
+
+for(i in 1:nrow(spread)) {
+  
+  for(j in 1:5) {
+    
+    spread[i,j] = bond10y[i,2] - spread[i,j]
+    
+  }
+  
+}
+
+# Vaihda muiden maiden absoluuttiset korot Suomen vastaavaan
+
+bond10y[,3:7] <- spread
+
