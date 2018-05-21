@@ -77,4 +77,3 @@ for(i in 1:nrow(spread)) {
 # Vaihda muiden maiden absoluuttiset korot Suomen vastaavaan
 
 bond10y[,3:7] <- spread
-
