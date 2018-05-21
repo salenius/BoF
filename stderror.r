@@ -44,9 +44,9 @@ eur1 <- xlsxload("euribor1.xlsx")
 print(std(eur3[,2]))
 # 0.2396108
 print(std(eur1[,2]))
-# 0.2307024
+# 0.228293
 
 # Valtion 10v lainojen tuotto
 dpv10 <- xlsxload("valtion10v.xlsx")
 print(std(dpv10[,2]))
-# 0.606155
+# 0.6251164
