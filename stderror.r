@@ -13,11 +13,20 @@ std <- function(vec){
   return(output)
 }
 
-# Lataa tiedosto
+xlsxload <- function(file){
+  df = xlsx::read.xlsx(file,sheetName="Taul1")
+  df = subset(df,!is.na(df[,1]))
+}
+
+# Lataa tiedostot
 # setwd("C:\\Users\\saleniusto\\Desktop\\Kehitystyö\\Financial indicators")
-omx <- xlsx::read.xlsx("omxhelsinki.xlsx",sheetName="Taul1")
-omx <- subset(omx,!is.na(omx[,1]))
+# OMX Helsinki
+omx <- xlsxload("omxhelsinki.xlsx")
 
 # Laske OMX Helsingin yleisindeksin std.dev 2013-2017
 print(std(omx[,2]))
 # 1055.507
+
+# Euribor 12kk
+eur12 <- xlsxload("euribor12.xlsx")
+
