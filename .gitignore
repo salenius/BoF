@@ -1,0 +1,7 @@
+#Ignooraa kaikki bof-loppuiset tiedostot
+*.bof
+*.txt
+
+#Ignooraa dashboards
+/dashboards
+/.DS_Store
