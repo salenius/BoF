@@ -2,6 +2,7 @@
 *.bof
 *.txt
 .gitignore
+*.xlsx
 
 #Ignooraa dashboards
 /dashboards
