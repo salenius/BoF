@@ -30,3 +30,17 @@ print(std(omx[,2]))
 # Euribor 12kk
 eur12 <- xlsxload("euribor12.xlsx")
 
+# 12kk euriborin std.dev 2013-2017
+print(std(eur12[,2]))
+
+# Euribor 3kk
+eur3 <- xlsxload("euribor3.xlsx")
+print(std(eur3[,2])
+
+# Euribor 1kk
+eur1 <- xlsxload("euribor1.xlsx")
+print(std(eur1[,2])
+
+# Laske standardipoikkeamat näille
+print(std(eur3[,2])
+print(std(eur1[,2])
