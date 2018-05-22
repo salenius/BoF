@@ -149,8 +149,8 @@ xlsx::write.xlsx(eur12std[,3:ncol(eur12std)],"euribor12_kkstdev.xlsx",sheetName=
 omx$month <- strftime(omx$date,format="%m")
 omx$year <- strftime(omx$date,format="%y")
 
-omxmean <- aggregate(x=omx[,2:7],by=omx[,8:9],FUN=mean,na.rm=T)
-omxstd <- aggregate(x=omx[,2:7],by=omx[,8:9],FUN=std)
+omxmean <- aggregate(x=omx[,2],by=omx[,3:4],FUN=mean,na.rm=T)
+omxstd <- aggregate(x=omx[,2],by=omx[,3:4],FUN=std)
 
 omxmean$year <- paste("20",omxmean$year,sep="")
 omxstd$year <- paste("20",omxstd$year,sep="")
