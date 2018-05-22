@@ -97,11 +97,11 @@ xlsx::write.xlsx(bond10std[,3:ncol(bond10std)],"valtionlainat_kkstdev.xlsx",shee
 
 #### Euriborit ja OMX ####
 
-eur1y$month <- strftime(eur1y$date,format="%m")
-eur1y$year <- strftime(eur1y$date,format="%y")
+eur1$month <- strftime(eur1$date,format="%m")
+eur1$year <- strftime(eur1$date,format="%y")
 
-eur1mean <- aggregate(x=eur1y[,2:7],by=eur1y[,8:9],FUN=mean,na.rm=T)
-eur1std <- aggregate(x=eur1y[,2:7],by=eur1y[,8:9],FUN=std)
+eur1mean <- aggregate(x=eur1[,2:7],by=eur1[,8:9],FUN=mean,na.rm=T)
+eur1std <- aggregate(x=eur1[,2:7],by=eur1[,8:9],FUN=std)
 
 eur1mean$year <- paste("20",eur1mean$year,sep="")
 eur1std$year <- paste("20",eur1std$year,sep="")
@@ -114,11 +114,11 @@ xlsx::write.xlsx(eur1std[,3:ncol(eur1std)],"euribor1_kkstdev.xlsx",sheetName="Kk
 
 ### Eur3 ####
 
-eur3y$month <- strftime(eur3y$date,format="%m")
-eur3y$year <- strftime(eur3y$date,format="%y")
+eur3$month <- strftime(eur3$date,format="%m")
+eur3$year <- strftime(eur3$date,format="%y")
 
-eur3mean <- aggregate(x=eur3y[,2:7],by=eur3y[,8:9],FUN=mean,na.rm=T)
-eur3std <- aggregate(x=eur3y[,2:7],by=eur3y[,8:9],FUN=std)
+eur3mean <- aggregate(x=eur3[,2:7],by=eur3[,8:9],FUN=mean,na.rm=T)
+eur3std <- aggregate(x=eur3[,2:7],by=eur3[,8:9],FUN=std)
 
 eur3mean$year <- paste("20",eur3mean$year,sep="")
 eur3std$year <- paste("20",eur3std$year,sep="")
@@ -130,11 +130,11 @@ xlsx::write.xlsx(eur3mean[,3:ncol(eur3mean)],"euribor3_kkmean.xlsx",sheetName="K
 xlsx::write.xlsx(eur3std[,3:ncol(eur3std)],"euribor3_kkstdev.xlsx",sheetName="Kk keskipoikkeamat",row.names = FALSE)
 
 # Eur12 ##
-eur12y$month <- strftime(eur12y$date,format="%m")
-eur12y$year <- strftime(eur12y$date,format="%y")
+eur12$month <- strftime(eur12$date,format="%m")
+eur12$year <- strftime(eur12$date,format="%y")
 
-eur12mean <- aggregate(x=eur12y[,2:7],by=eur12y[,8:9],FUN=mean,na.rm=T)
-eur12std <- aggregate(x=eur12y[,2:7],by=eur12y[,8:9],FUN=std)
+eur12mean <- aggregate(x=eur12[,2:7],by=eur12[,8:9],FUN=mean,na.rm=T)
+eur12std <- aggregate(x=eur12[,2:7],by=eur12[,8:9],FUN=std)
 
 eur12mean$year <- paste("20",eur12mean$year,sep="")
 eur12std$year <- paste("20",eur12std$year,sep="")
@@ -146,11 +146,11 @@ xlsx::write.xlsx(eur12mean[,3:ncol(eur12mean)],"euribor12_kkmean.xlsx",sheetName
 xlsx::write.xlsx(eur12std[,3:ncol(eur12std)],"euribor12_kkstdev.xlsx",sheetName="Kk keskipoikkeamat",row.names = FALSE)
 
 # OMX Helsinki #
-omxy$month <- strftime(omxy$date,format="%m")
-omxy$year <- strftime(omxy$date,format="%y")
+omx$month <- strftime(omx$date,format="%m")
+omx$year <- strftime(omx$date,format="%y")
 
-omxmean <- aggregate(x=omxy[,2:7],by=omxy[,8:9],FUN=mean,na.rm=T)
-omxstd <- aggregate(x=omxy[,2:7],by=omxy[,8:9],FUN=std)
+omxmean <- aggregate(x=omx[,2:7],by=omx[,8:9],FUN=mean,na.rm=T)
+omxstd <- aggregate(x=omx[,2:7],by=omx[,8:9],FUN=std)
 
 omxmean$year <- paste("20",omxmean$year,sep="")
 omxstd$year <- paste("20",omxstd$year,sep="")
