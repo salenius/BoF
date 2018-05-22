@@ -4,6 +4,9 @@
 .gitignore
 *.xlsx
 
+#Älä ignorraa
+!metadata.xlsx
+
 #Ignooraa dashboards
 /dashboards
 /.DS_Store
