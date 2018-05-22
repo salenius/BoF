@@ -1,3 +1,5 @@
+#Ad hoc
+
 summa_yhteen <- function(x,y){
 		return(x+y)  
 }
