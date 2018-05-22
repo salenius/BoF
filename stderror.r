@@ -7,7 +7,6 @@
 ###################
 
 # I use this file to calculate the standard deviation for several time series
-# Basically take square root of variance
 
 std <- function(vec){
   output = sqrt(var(vec,na.rm=TRUE))
@@ -77,3 +76,21 @@ for(i in 1:nrow(spread)) {
 # Vaihda muiden maiden absoluuttiset korot Suomen vastaavaan
 
 bond10y[,3:7] <- spread
+
+#################################
+library(dplyr)
+
+bond10y$month <- strftime(bond10y$date,format="%m")
+bond10y$year <- strftime(bond10y$date,format="%y")
+
+bond10mean <- aggregate(x=bond10y[,2:7],by=bond10y[,8:9],FUN=mean,na.rm=T)
+bond10std <- aggregate(x=bond10y[,2:7],by=bond10y[,8:9],FUN=std)
+
+bond10mean$year <- paste("20",bond10mean$year,sep="")
+bond10std$year <- paste("20",bond10std$year,sep="")
+
+bond10mean$date <- paste("01",bond10mean$month,bond10mean$year,sep="-") %>% as.Date(.,format="%d-%m-%Y")
+bond10std$date <- paste("01",bond10std$month,bond10std$year,sep="-") %>% as.Date(.,format="%d-%m-%Y")
+
+xlsx::write.xlsx(bond10mean[,3:ncol(bond10mean)],"valtionlainat_kkmean.xlsx",sheetName="Kk keskiarvot",row.names = FALSE)
+xlsx::write.xlsx(bond10std[,3:ncol(bond10std)],"valtionlainat_kkstdev.xlsx",sheetName="Kk keskipoikkeamat",row.names = FALSE)
