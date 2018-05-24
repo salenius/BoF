@@ -14,7 +14,7 @@
 
 #### Lue csv-tiedosto ####
 
-aggregoi <- function(file){
+aggregoi <- function(file,save=TRUE){
   
   df1 <- read.csv(file,sep=",")
   
@@ -40,7 +40,11 @@ aggregoi <- function(file){
   mean_file <- paste(paste("Aggregaatit", "mean", sep="/"), filename, sep="_")
   stdev_file <- paste(paste("Aggregaatit", "stdev", sep="/"), filename, sep="_")
   
+ if(save==TRUE){
   write.csv(keskiarvo, mean_file)
   write.csv(stdpoikkeama, stdev_file)
+  } else{
+    return(list(mean=keskiarvo, stdev=stdpoikkeama))
+  }
   
 }
