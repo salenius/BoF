@@ -1,5 +1,7 @@
 #Ignooraa kaikki bof-loppuiset tiedostot
 *.bof
+*.bof~
+*.bof#
 *.txt
 .gitignore
 *.xlsx
