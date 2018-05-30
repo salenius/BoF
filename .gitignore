@@ -5,6 +5,10 @@
 *.txt
 .gitignore
 *.xlsx
+*.swp
+*.org
+*.org~
+*.py~
 
 #Älä ignorraa
 !metadata.xlsx
