@@ -163,7 +163,11 @@ for i in range(len(df1.index)):
 df1.index = [i for i in range(len(df1["value"]))]
 df1 = df1[3:] 
 df1 = df1.sort_values(by="value",ascending=False)
-print(df1)
+
+# Tallenna tulokset
+writer = pd.ExcelWriter("kuva.xlsx")
+df1.to_excel(writer, sheet_name="Chart1a", na_rep="#N/A", index=False, )
+writer.save()
 
 #######################
 ## Kuvio 1b
