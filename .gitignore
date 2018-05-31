@@ -8,7 +8,12 @@
 *.swp
 *.org
 *.org~
+*.org#
+*.ses
+*.ses#
+*.ses~
 *.py~
+*.py#
 
 #Älä ignorraa
 !metadata.xlsx
