@@ -202,7 +202,19 @@ sortandsave(31,12,2016,"Chart4","A,C:AD,AM")
 ## Kuvio 4b
 #######################
 
+<<<<<<< HEAD
 finmedian("Chart4")
+=======
+# Nyt päästään viimein järjestämään maat oikeaan järjestykseen valuen perusteella
+df1.index = [i for i in range(len(df1["value"]))]
+df1 = df1[3:] 
+df1 = df1.sort_values(by="value",ascending=False)
+
+# Tallenna tulokset
+writer = pd.ExcelWriter("kuvat.xlsx")
+df1.to_excel(writer, sheet_name="Chart1a", na_rep="#N/A", index=False, )
+writer.save()
+>>>>>>> c0db68b2217cb19acbcd1b4f838c03b9f27da4c6
 
 #######################
 ## Kuvio 6a
