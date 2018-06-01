@@ -24,6 +24,8 @@ exfile = pd.ExcelFile(chfile)
 # Kansio, johon kaikki kuvia varten tuotettavat datat tallennetaan 
 writer = pd.ExcelWriter("kuvat.xlsx")
 
+
+
 ### Määritellään funktio, joka voi hakea suoraan tästä tiedostosta halutun sheetin
 
 def exread(sheet,cols=None):
@@ -94,7 +96,6 @@ dic1 = dict(Austria = "AT",
             Slovakia = "SK",
             EU = "EU"
 )
- 
 
     
 def maalyh(x):
@@ -112,7 +113,7 @@ def maalyh(x):
     return result 
 
 
-def sortandsave(p, kk, v, sheet, cols=None):
+def sortandsave(p, kk, v, sheet, cols=None, save_sheet=None):
     """
     Käytä tätä funktiota tallentamaan poikkileikkauskuvaajat järjestelmäriskipuskurista
     annettuna päivämääränä ja järjestämään havainnot suuruusjärjestykseen suurimmasta pienimpään.
@@ -120,6 +121,7 @@ def sortandsave(p, kk, v, sheet, cols=None):
     sitten valitaan välilehti (sheet) mistä data haetaan, ja cols-argumentti määrää
     mitkä sarakkeet otetaan ylipäätään mukaan analyysiin.
     """
+    
     ch1 = exread(sheet, cols)
     df1 = haepvm(ch1, p, kk, v)
 
@@ -144,12 +146,14 @@ def sortandsave(p, kk, v, sheet, cols=None):
     df1.index = [i for i in range(len(df1["value"]))]
     df1 = df1[1:] 
     df1 = df1.sort_values(by="value",ascending=False)
-    print(df1.head())
     
     # Tallenna tulokset Excel-tiedostoon
-    df1.to_excel(writer, sheet_name=str(sheet+"a"), na_rep="#N/A", index=False)
-    writer.save()
-    print(sheet + "a tallennettu") 
+    if save_sheet == None:
+        sheet1 = sheet
+    else:
+        sheet1 = save_sheet
+    df1.to_excel(writer, sheet_name=str(sheet1+"a"), na_rep="#N/A", index=False)
+    print(sheet1 + "a tallennettu") 
     
 def finmedian(sheet):
     """
@@ -159,14 +163,30 @@ def finmedian(sheet):
     ch1 = exread(sheet)
     df1b = ch1.filter(regex='(^date$|^Date$|^FI$|Finland|media.{1,4}|Media.{1,4})') # Etsi sarakkeet regular expressioneiden perusteella
     df1b = df1b.rename(columns=lambda x: re.sub(r'(Finland.{1,250}|FI)', 'Suomi',x))
-    df1b = df1b.rename(columns=lambda x: re.sub(r'(mediaani|Painottamaton.{1,70}|painottamaton.{1,70})', '- painottamaton mediaani',x))
+    df1b = df1b.rename(columns=lambda x: re.sub(r'(mediaani|Painottamaton.{1,70}|painottamaton.{1,70}|painotettu.{1,70})', '- painottamaton mediaani',x))
 
     print(df1b.head())
 
     df1b.to_excel(writer, sheet_name=str(sheet+"b"), na_rep="#N/A", index=False)
-    writer.save()
-    print(sheet +"b tallennettu") 
+    print(sheet +"b tallennettu")
 
+def chart9(p, kk, v, lyh):
+    """
+    Käytä tätä funktiota pelkästään Chart9:n piirtämiseen. Ideana on, että kaikilla mailla on monta aikasarjaa, jotka pitää aggregoida lopullisen version
+    tuottamiseksi.
+    """
+    # Tee tämä :ch9 = exread(sheet)
+    db9 = haepvm(ch9,p,kk,v)
+    db9 = db9.filter(like=lyh,axis=1) # Filtteröi taulukkoa s.e. vain 1 maa jää jäljelle
+    try: # Koska kaikkia lyhenteellä haettavia maita ei löydy datasta, tapahtuu väistämättä virheitä
+        db9.columns = ["var1", "var2", "var3", "var4", "var5", "var6"] # Nimeä sarakkeet uudestaan elämän helpottamiseksi
+    except:
+        pass
+    else:
+        db9.index = [0]
+        luku = 100*(db9["var5"][0] + db9["var6"][0])/(db9["var1"][0]-db9["var2"][0]+db9["var3"][0]-db9["var4"][0]) # Varsinainen laskettava luku, joka siirretään Exceliin
+        exceliin.update({dic1[lyh]: luku})
+    
 
 #######################
 ## Kuvio 1a
@@ -202,25 +222,13 @@ sortandsave(31,12,2016,"Chart4","A,C:AD,AM")
 ## Kuvio 4b
 #######################
 
-<<<<<<< HEAD
 finmedian("Chart4")
-=======
-# Nyt päästään viimein järjestämään maat oikeaan järjestykseen valuen perusteella
-df1.index = [i for i in range(len(df1["value"]))]
-df1 = df1[3:] 
-df1 = df1.sort_values(by="value",ascending=False)
-
-# Tallenna tulokset
-writer = pd.ExcelWriter("kuvat.xlsx")
-df1.to_excel(writer, sheet_name="Chart1a", na_rep="#N/A", index=False, )
-writer.save()
->>>>>>> c0db68b2217cb19acbcd1b4f838c03b9f27da4c6
 
 #######################
 ## Kuvio 6a
 #######################
 
-
+sortandsave(30,9,2017,"Chart6", "A,AE:BG")
 
 #######################
 ## Kuvio 6b
@@ -231,11 +239,48 @@ finmedian("Chart6")
 #######################
 ## Kuvio 7a
 #######################
+# Koska Kuvio 7:n data haetaan Kuvio 6:n sheetistä, tässä tarvitaan vähän oveluutta.
+# Tämä ei vielä tallenna oikeaa sarjaa, vaan pitäisi summata Chartit 6 ja 7
+# tämä testaa vain toimiiko uusi funktion argumentti
+sortandsave(30,9,2017,"Chart6", "A,C:AD,BH", "Chart7")
 
 #######################
 ## Kuvio 7b
 #######################
 
+#######################
+## Kuvio 8a
+#######################
+
+sortandsave(31,12,2017,"Chart8","A,C:AE")
+
+#######################
+## Kuvio 8b
+#######################
+
+finmedian("Chart8")
+
+#######################
+## Kuvio 9a
+#######################
+
+exceliin = dict()
+ch9 = exread("Chart9")
+
+chart9(30,9,2017,"Czech")
+
+for key, val in dic1.items():
+    chart9(30,9,2017,key)
+print(exceliin)
+df9 = pd.DataFrame(list(exceliin.items()))
+df9.columns = ["maa", "value"]
+df9 = df9.sort_values(by="value",ascending=False)
+df9.to_excel(writer, sheet_name="Chart9a", na_rep="#N/A", index=False)
+print("Chart9a tallennettu") 
+
+
+writer.save()
+writer.close()
 
 
 end = time.time()
