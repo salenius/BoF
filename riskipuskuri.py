@@ -24,8 +24,6 @@ exfile = pd.ExcelFile(chfile)
 # Kansio, johon kaikki kuvia varten tuotettavat datat tallennetaan 
 writer = pd.ExcelWriter("kuvat.xlsx")
 
-
-
 ### Määritellään funktio, joka voi hakea suoraan tästä tiedostosta halutun sheetin
 
 def exread(sheet,cols=None):
@@ -165,11 +163,43 @@ def finmedian(sheet):
     df1b = df1b.rename(columns=lambda x: re.sub(r'(Finland.{1,250}|FI)', 'Suomi',x))
     df1b = df1b.rename(columns=lambda x: re.sub(r'(mediaani|Painottamaton.{1,70}|painottamaton.{1,70}|painotettu.{1,70})', '- painottamaton mediaani',x))
 
-    print(df1b.head())
-
     df1b.to_excel(writer, sheet_name=str(sheet+"b"), na_rep="#N/A", index=False)
     print(sheet +"b tallennettu")
 
+# Kuvio 5:n piirtämiseen
+
+def chart5(p, kk, v, lyh):
+    """
+    Käytä tätä funktiota Chart5:n piirtämiseen. Ideana on, että käyttäjä on ensin ladannut välilehdet Chart5, Chart5m, ja Chart5m2, joista piirretään lopullinen yhdistelmätaulu.
+    """
+    db5 = haepvm(ch5q, p, kk, v)
+    db5m = haepvm(ch5m, p, kk, v)
+    db5m2 = haepvm(ch5m2, p, kk, v)
+    
+    # Jokaista 3 taulukkoa pitää filtteröidä eri tavalla
+    db5 = db5.filter(like=lyh, axis=1) 
+    db5m = db5m.filter(like=dic1[lyh])
+    db5m2 = db5m2.filter(like=dic1[lyh])
+    
+    for i in [db5, db5m, db5m2]:
+        i.index = [0]
+
+    # Nimeä sarakkeet uudestaan työnteon helpottamiseksi.
+    db5.columns = ["var1", "var2"]
+    db5m.columns = ["var3", "var4"]
+    db5m2.columns = ["var5", "var6"]
+
+    # Yhdistä taulukot.
+    db = [db5, db5m, db5m2]
+    db = pd.concat(db,axis=1)
+
+    # Laske tunnusluku taulukon arvoista
+    luku = 100*(db["var1"] + db["var3"] + db["var4"])/(db["var2"] + db["var5"] + db["var6"])
+    sanakirja.update({dic1[lyh]: luku[0]})
+    
+    
+# Kuvio 9:n piirtämiseen
+    
 def chart9(p, kk, v, lyh):
     """
     Käytä tätä funktiota pelkästään Chart9:n piirtämiseen. Ideana on, että kaikilla mailla on monta aikasarjaa, jotka pitää aggregoida lopullisen version
@@ -186,13 +216,48 @@ def chart9(p, kk, v, lyh):
         db9.index = [0]
         luku = 100*(db9["var5"][0] + db9["var6"][0])/(db9["var1"][0]-db9["var2"][0]+db9["var3"][0]-db9["var4"][0]) # Varsinainen laskettava luku, joka siirretään Exceliin
         exceliin.update({dic1[lyh]: luku})
+
+# Käytä tätä jakaaksesi taulukon 1. rivi sen 2. rivillä
+
+def jako(x):
+    """
+    Jaa taulukon 1. rivi sen 2. rivillä
+    """
+    try:
+        return x[0]/x[1]
+    except:
+        return x[0]
+        
+def chart11(p, kk, v):
+    """
+    Käytä tätä funktiota Chart11:n piirtämiseen.
+    """
+    ch11i = exread("Chart11i", "B,BD:CC")
+    ch11b = exread("Chart11b", "B,AD:BC")
+    df11i = haepvm(ch11i, p, kk, v)
+    df11b = haepvm(ch11b, p, kk, v)
+
+    # Yhdistä taulukot ja tee sarakekohtaiset jakolaskut
+    df = pd.concat([df11i, df11b],axis=0)
+    df = df.drop(columns=["Date"])
+    df.index = [0,1]
+    df.loc["value"] = 100*df.loc[0]/df.loc[1]
+    df.loc["maa"] = df.columns
+    df = df.transpose()
+    # Luo uusi indeksi, ota maat ja arvot talteen, ja transponoi:
+
+    df = df[["value", "maa"]]
+    df.columns = ["value", "maa"]
+    df = df.sort_values(by="value", axis=0, ascending=False)
+    df.to_excel(writer, sheet_name="Chart11a", na_rep="#N/A", index=False)
+    print("Chart11a tallenttu")
     
 
 #######################
 ## Kuvio 1a
 #######################
 
-sortandsave(31,3,2018,"Chart1","B,D:AF")
+sortandsave(31, 3, 2018, "Chart1", "B,D:AF")
 
 #######################
 ## Kuvio 1b
@@ -204,7 +269,7 @@ finmedian("Chart1")
 ## Kuvio 3a
 #######################
 
-sortandsave(31,3,2018,"Chart3","A,DK:EL,FO")
+sortandsave(31, 3, 2018, "Chart3", "A, DK:EL,FO")
 
 #######################
 ## Kuvio 3b
@@ -216,7 +281,7 @@ finmedian("Chart3")
 ## Kuvio 4a
 #######################
 
-sortandsave(31,12,2016,"Chart4","A,C:AD,AM")
+sortandsave(31, 12, 2016, "Chart4", "A,C:AD,AM")
 
 #######################
 ## Kuvio 4b
@@ -225,10 +290,44 @@ sortandsave(31,12,2016,"Chart4","A,C:AD,AM")
 finmedian("Chart4")
 
 #######################
+## Kuvio 5
+#######################
+# Tarvitaan vähän edistyneempiä kikkoja, datat 3 eri välilehdeltä ja osin sekä kuukausi- että kvartaalidatasta.
+sanakirja = dict()
+ch5q = exread("Chart5", "A,C:BH")
+ch5m = exread("Chart5m", "B,EJ:GO")
+ch5m2 = exread("Chart5m2", "B,DZ:GE")
+for key, val in dic1.items():
+    try:
+        chart5(31, 12, 2017, key)
+    except:
+        pass
+db5 = pd.DataFrame(list(sanakirja.items()))
+db5.columns = ["maa", "value"]
+
+# Lisää EU-mediaani
+# Ongelmana on, että EU-mediaanin laskutapa ei täsmää siihen, millä
+# Patu-kansiossa lasku on tehty. Hae EU-mediaani Patusta!
+med5 = db5["value"].mean()
+db5 = db5.append([{"maa": "EU", "value": med5}])
+print(db5.tail()) 
+
+# Sorttaa ja tallenna Exceliin
+db5 = db5.sort_values(by="value", ascending=False)
+db5.to_excel(writer, sheet_name="Chart5a", na_rep="#N/A", index=False)
+print("Chart5a tallennettu onnistuneesti")
+
+#######################
+## Kuvio 5b
+#######################
+
+
+
+#######################
 ## Kuvio 6a
 #######################
 
-sortandsave(30,9,2017,"Chart6", "A,AE:BG")
+sortandsave(30, 9, 2017, "Chart6", "A,AE:BG")
 
 #######################
 ## Kuvio 6b
@@ -242,17 +341,19 @@ finmedian("Chart6")
 # Koska Kuvio 7:n data haetaan Kuvio 6:n sheetistä, tässä tarvitaan vähän oveluutta.
 # Tämä ei vielä tallenna oikeaa sarjaa, vaan pitäisi summata Chartit 6 ja 7
 # tämä testaa vain toimiiko uusi funktion argumentti
-sortandsave(30,9,2017,"Chart6", "A,C:AD,BH", "Chart7")
+sortandsave(30, 9, 2017, "Chart6", "A,C:AD,BH", "Chart7")
 
 #######################
 ## Kuvio 7b
 #######################
 
+
+
 #######################
 ## Kuvio 8a
 #######################
 
-sortandsave(31,12,2017,"Chart8","A,C:AE")
+sortandsave(31, 12, 2017, "Chart8", "A,C:AE")
 
 #######################
 ## Kuvio 8b
@@ -267,21 +368,31 @@ finmedian("Chart8")
 exceliin = dict()
 ch9 = exread("Chart9")
 
-chart9(30,9,2017,"Czech")
+chart9(30, 9, 2017, "Czech")
 
 for key, val in dic1.items():
     chart9(30,9,2017,key)
-print(exceliin)
 df9 = pd.DataFrame(list(exceliin.items()))
 df9.columns = ["maa", "value"]
 df9 = df9.sort_values(by="value",ascending=False)
 df9.to_excel(writer, sheet_name="Chart9a", na_rep="#N/A", index=False)
-print("Chart9a tallennettu") 
+print("Chart9a tallennettu")
+
+#######################
+## Kuvio 11a
+#######################
+
+chart11(30, 9, 2017)
+
+
+#######################
+## Kuvio 11b
+#######################
+
 
 
 writer.save()
 writer.close()
-
 
 end = time.time()
 
