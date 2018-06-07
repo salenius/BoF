@@ -19,6 +19,9 @@ import pandas as pd
 
 import re
 
+import datetime as dte
+from dateutil.relativedelta import relativedelta as reldel
+
 chfile = "riskipuskuri.xlsx"
 exfile = pd.ExcelFile(chfile)
 # Kansio, johon kaikki kuvia varten tuotettavat datat tallennetaan 
@@ -26,7 +29,27 @@ writer = pd.ExcelWriter("kuvat.xlsx")
 
 ### Määritellään funktio, joka voi hakea suoraan tästä tiedostosta halutun sheetin
 
-def exread(sheet,cols=None):
+def na_summa(row):
+    """
+    Laske #N/A-termien määrä dataframen rivissä
+    """
+    temp = []
+    for r in row.iterrows():
+        index, data = r
+        temp.append(data.tolist())
+    try:
+        temp = temp[0] # Lista listan sisällä, ota sisemmäinen ulos
+    except IndexError:
+        return 0
+    temp = temp[1:] # Poista pvm listasta
+    for i in range(len(temp)):
+       temp[i] = isinstance(temp[i], float)
+    summa = sum(temp)
+    return summa
+     
+ 
+
+def exread(sheet, cols=None):
     """
     Hae exfile-muuttujan nimisestä Excel-tiedostosta haluttu välilehti. Koska aikasarjat on
     haettu suoraan Sarkasta, funktion täytyy tiputtaa 9 ensimmäistä riviä pois.
@@ -40,13 +63,33 @@ def haepvm(df, p, kk, v):
     """
     Hae dataframesta rivi annetun päivämäärän perusteella, joka on date-sarakkeessa
     """
-    pvm = str(p) + "." + str(kk) + "." + str(v)
-    try:
-        result = df.loc[df["date"] == pvm]
-    except KeyError:
-        result = df.loc[df["Date"] == pvm]
-    finally:
-        return result
+    #pvm = str(p) + "." + str(kk) + "." + str(v)
+    #try:
+    #    result = df.loc[df["date"] == pvm]
+    #except KeyError:
+    #    result = df.loc[df["Date"] == pvm]
+    #finally:
+    #    return result
+    #---
+    # Tee tähän uusi versio, joka kykenee iteroimaan taaksepäin
+    if kk == 12:
+        v += 1
+        kk0 = 1
+    else:
+        kk0 = kk+1
+    pvm2 = dte.date(v, kk0, 1)
+    pvm1 = pvm2 - reldel(days=1)
+    pvm = pvm1.strftime("%d.%m.%Y")
+    rivi = df.loc[df["Date"] == pvm]
+    summa = na_summa(rivi)
+    while (rivi.empty or (summa < 24)):
+        pvm1 = pvm1.replace(day=1)
+        pvm1 = pvm1 - reldel(days=1)
+        pvm = pvm1.strftime("%d.%m.%Y")
+        rivi = df.loc[df["Date"] == pvm]
+        summa = na_summa(rivi)
+    return rivi
+ 
 
 def haequart(df, q, v):
     """
@@ -63,6 +106,33 @@ def haequart(df, q, v):
     else:
         raise ValueError
 
+# Excelin päivämäärätallennusobjekti:
+
+class Onecell:
+
+    """
+    Objekti, joka tallennnetaan riskipuskuri.xlsx:ssä yhteen ainoaan soluun tietyssä välilehdesssä.
+    """
+    def __init__(self, sheet, solu):
+        """
+        x: objekti, esim. päivämäärä, luku tai teksti
+        sheet: välilehti, str-objekti, johon tallennetaan
+        solu: pari (a, b) välilehdessä 'sheet', johon tallennetaan. a:n ja b:n
+        täytyy olla kokonaislukuja, esim. solu "A7" on (1,7)
+        """
+        self.value = pd.DataFrame({"value": [None]})
+        self.sheet = sheet
+        self.solu = solu
+
+    def save(self, x):
+        """
+        Tallenna "value" haluttuun paikkaan Excel-tiedostossa ("sheet" ja "solu")
+        """
+        self.value[0] = x
+        self.value.to_excel(writer, sheet_name=self.sheet, startcol=self.solu[0]-1, startrow=self.solu[1]-1, header=None, index=False)
+        
+
+        
 # Tähän tulee nämä
 dic1 = dict(Austria = "AT",
             Belgium = "BE",
@@ -79,7 +149,7 @@ dic1 = dict(Austria = "AT",
             Greece = "GR",
             Croatia = "HR",
             Hungary = "HU",
-            Ireland = "IR",
+            Ireland = "IE",
             Italy = "IT",
             Lithuania = "LT",
             Latvia = "LV",
@@ -108,7 +178,9 @@ def maalyh(x):
         else:
             pass
 
-    return result 
+    return result
+
+
 
 
 def sortandsave(p, kk, v, sheet, cols=None, save_sheet=None):
@@ -218,16 +290,7 @@ def chart9(p, kk, v, lyh):
         exceliin.update({dic1[lyh]: luku})
 
 # Käytä tätä jakaaksesi taulukon 1. rivi sen 2. rivillä
-
-def jako(x):
-    """
-    Jaa taulukon 1. rivi sen 2. rivillä
-    """
-    try:
-        return x[0]/x[1]
-    except:
-        return x[0]
-        
+ 
 def chart11(p, kk, v):
     """
     Käytä tätä funktiota Chart11:n piirtämiseen.
@@ -250,7 +313,7 @@ def chart11(p, kk, v):
     df.columns = ["value", "maa"]
     df = df.sort_values(by="value", axis=0, ascending=False)
     df.to_excel(writer, sheet_name="Chart11a", na_rep="#N/A", index=False)
-    print("Chart11a tallenttu")
+    print("Chart11a tallennettu")
     
 
 #######################
@@ -258,12 +321,20 @@ def chart11(p, kk, v):
 #######################
 
 sortandsave(31, 3, 2018, "Chart1", "B,D:AF")
+cell21 = Onecell("Pvm",(1,1))
+cell21.save("30.6.2018")
 
 #######################
 ## Kuvio 1b
 #######################
 
 finmedian("Chart1")
+
+#######################
+## Kuvio 2a
+#######################
+
+sortandsave(31, 12, 2016, "Chart2", "A,AE:BG")
 
 #######################
 ## Kuvio 3a
@@ -352,7 +423,6 @@ sortandsave(30, 9, 2017, "Chart6", "A,C:AD,BH", "Chart7")
 #######################
 ## Kuvio 8a
 #######################
-
 sortandsave(31, 12, 2017, "Chart8", "A,C:AE")
 
 #######################
@@ -379,10 +449,16 @@ df9.to_excel(writer, sheet_name="Chart9a", na_rep="#N/A", index=False)
 print("Chart9a tallennettu")
 
 #######################
+## Kuvio 10a
+#######################
+
+sortandsave(31, 12, 2016, "Chart10", "A,C:AC,AF")
+
+#######################
 ## Kuvio 11a
 #######################
 
-chart11(30, 9, 2017)
+chart11(30, 4, 2018)
 
 
 #######################
